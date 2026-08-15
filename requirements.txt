@@ -1,0 +1,8 @@
+# 项目依赖。安装方式:.venv/Scripts/pip install -r requirements.txt
+# (pytest 是开发/测试用,小项目先放一起,讲究的话可以拆 requirements-dev.txt)
+streamlit==1.60.0
+openai==2.53.0
+python-dotenv==1.2.2
+pytest==9.1.1
+scikit-learn==1.9.0
+numpy==2.4.1
