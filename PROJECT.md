@@ -88,6 +88,7 @@ python main.py                  # 运行入口
 | 第11课 | RAG:本地向量化+相似度检索 | 向量、TF-IDF、余弦相似度 | ✅ 完成 2026-08-11 |
 | 第12课 | RAG:检索结果注入 prompt | 可选参数、prompt 注入、token 预算 | ✅ 完成 2026-08-13 |
 | 第13课 | RAG 收尾:测试 + 清单核对 | tmp_path、monkeypatch | ✅ 完成 2026-08-13 |
+| 第14课 | git + 部署上线 | git 基础、.gitignore 保护、gh、Streamlit Cloud、TOML Secrets | ✅ 完成 2026-08-15 |
 
 ## 六、已完成记录
 
