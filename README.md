@@ -4,6 +4,8 @@
 
 命令行版和网页版都有 —— 网页版用 **Streamlit** 构建,上传文件、填关键词、点按钮即可得到完整分析。
 
+🔗 **在线体验**:https://resume-optimizer-yeazwx2nnetzxfxgmuthmn.streamlit.app/(Streamlit Community Cloud 部署)
+
 ## ✨ 功能
 
 - 🔍 **关键词匹配**:把 JD 里的关键词和简历做比对,计算匹配率,标出命中/缺失
@@ -36,7 +38,7 @@ python -m venv .venv
 .venv/Scripts/python -m pytest tests
 ```
 
-33 个测试覆盖解析(parser)、匹配(matcher)、检查(checker)、JD 关键词解析(llm)、文件导出(exporter)。
+54 个测试覆盖解析(parser)、匹配(matcher)、检查(checker)、JD 关键词解析(llm)、文件导出(exporter)、RAG 知识库(knowledge)与检索(retriever)。
 
 ## 📁 项目结构
 
@@ -50,7 +52,10 @@ python -m venv .venv
 │   ├── matcher.py            # 匹配:JD 关键词 vs 简历,算匹配率
 │   ├── checker.py            # 检查:9 条质量规则
 │   ├── llm.py                # LLM 调用:拼 prompt → DeepSeek → 建议/改写
-│   └── exporter.py           # 导出:把改写后的简历写进文件
+│   ├── exporter.py           # 导出:把改写后的简历写进文件
+│   ├── knowledge.py          # RAG 知识库:读岗位文档 + 切块 + 检索拼参考
+│   └── retriever.py          # RAG 检索:TF-IDF 向量化 + 余弦相似度
+├── examples/knowledge/       # 岗位知识库(真实岗位要求文档)
 ├── examples/                 # 测试数据(示例简历 / JD)
 ├── output/                   # 导出文件存放处(自动生成)
 ├── tests/                    # pytest 单元测试
@@ -60,7 +65,7 @@ python -m venv .venv
 
 ## 🛠️ 技术栈
 
-- **Python 3.14** · Streamlit(网页)· openai SDK(调 DeepSeek,OpenAI 兼容接口)· python-dotenv(读 .env)· pytest(测试)
+- **Python 3.14** · Streamlit(网页)· openai SDK(调 DeepSeek,OpenAI 兼容接口)· scikit-learn + numpy(RAG 向量化与相似度检索)· python-dotenv(读 .env)· pytest(测试)
 
 ## ⚙️ 配置说明
 

@@ -879,3 +879,60 @@ parse_keyword_json(raw_text)       # ② 把回复解析成列表 —— 纯逻�
 | `PROJECT.md` / `CAREER.md` | RAG 升级勾选完成、进度核对 |
 
 RAG 升级到此全部完成:检索(第 11 课)→ 增强(第 12 课)→ 测试收尾(第 13 课),54 个测试全绿。
+
+## 第 14 课:git + 部署上线(2026-08-15)
+
+### 1. 项目上线了
+
+把简历优化助手部署到 Streamlit Community Cloud,线上可访问(需 Streamlit 登录)。这也让"已部署上线"能写进简历。
+
+### 2. git 基础(面试常问)
+
+- **git 是什么**:项目的"时光机 + 备份箱",记录每次改动,可回退,可上传到 GitHub
+- 4 个核心动作:
+  - `git init` 开仓库(第一次,一次即可)
+  - `git add <文件>` 把改动装进"篮子"(准备存档)
+  - `git commit -m "说明"` 拍照存档(留下一条历史记录)
+  - `git push` 把本地存档上传到 GitHub
+- `git status` 看当前状态;`git config user.name/email` 设置"存档署名"
+- 生活例子:init=给文件夹办户口本;add=装纸箱;commit=贴标签封箱;push=寄到网上的仓库
+
+### 3. `.gitignore` 保护敏感文件(关键!)
+
+- `.gitignore` 里列的文件,git 永不追踪/上传——就算 `git add .` 手滑也不会传
+- 本项目忽略的:`examples/my-resume.txt`(真实简历,含手机号/邮箱)、`examples/my-jd.txt`、`.env`(API key)、`.venv/`、`output/`、`__pycache__/`、`.pytest_cache/`
+- **教训**:你的真实简历含个人联系方式,公开仓库必须忽略;仓库里放的是一份"示例假简历"(examples/resume.txt),功能演示用,不泄露隐私
+- 验证命令:`git status`(看没被 add)和 `git check-ignore <文件>`(看是否被忽略)
+
+### 4. `gh` 命令行 + 登录
+
+- **gh** = GitHub 官方命令行工具,可以不用浏览器操作 GitHub
+- `gh auth login` 登录;`gh auth status` 查看登录状态
+- 本项目:浏览器打不开 GitHub(国内网络),但 **gh 命令行能连** → 全程用命令行建仓库、推送,绕开浏览器
+- `gh repo create <名字> --public --source . --remote origin --push` 一条命令建仓库+推送
+
+### 5. Streamlit Community Cloud 部署
+
+- 流程:代码推 GitHub(公开仓库,免费版要求)→ share.streamlit.io 登录(GitHub 授权)→ New app → 选仓库/分支/入口文件(`app.py`)→ Deploy → 得到网址
+- **密钥配置(Secrets)**:云端没有 `.env`,要在 app 设置里配 Secrets 存 API key
+- **踩坑:TOML vs .env 格式**(面试好素材):
+  - `.env` 格式:`KEY=值`(值不带引号),`load_dotenv()` 读
+  - **TOML 格式**:`KEY = "值"`(字符串必须带双引号),Streamlit Secrets 要求这种
+  - 把 `.env` 的 key 直接粘进 Secrets 会报 `Invalid format: please enter valid TOML`,加引号即可
+  - 规律:配置文件的格式要求比想象严格,报错先检查"值该不该带引号"
+
+### 6. 踩坑:国内访问 GitHub 不稳定
+
+- 现象:浏览器打不开 github.com,提示 ERR_CONNECTION_TIMED_OUT;但命令行 curl/git 能连
+- 排查过:系统代理未开、DNS 是公共 DNS、无 IPv6 问题 → 是网络线路问题,时通时不通
+- **教训**:遇到"浏览器打不开、命令行能连",别急着改网络设置,先用命令行工具(git/gh/curl)测通道通不通;通了就能用命令行完成很多操作
+- 收尾:用 gh 的 device flow 登录(`github.com/login/device` 输设备码),绕开打不开的主站
+
+### 7. 本课新增/修改的文件
+
+| 文件 | 改动 |
+|------|------|
+| `.gitignore` | 新增忽略:真实简历/JD、output/、pytest 缓存 |
+| `examples/my-resume.txt` | 项目描述加"已部署上线(Streamlit Community Cloud)" |
+| GitHub 仓库 | **新增**:`Guo-yuan707/resume-optimizer`(公开) |
+| 线上 app | **新增**:Streamlit Cloud 部署,网址见 PROJECT.md |
