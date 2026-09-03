@@ -1,0 +1,9 @@
+# Streamlit 主题配置(第 15 课新增)
+# 和 app.py 里注入的自定义 CSS 互补:这里管基础配色,那里面管卡片/圆角/字体
+[theme]
+base = "light"
+primaryColor = "#2563EB"        # 品牌强调色(靛蓝)
+backgroundColor = "#F4F5F7"     # 页面底色(浅灰,衬托白色卡片)
+secondaryBackgroundColor = "#FFFFFF"  # 输入控件底色(白)
+textColor = "#1F2937"           # 正文(深灰,比纯黑柔和)
+font = "sans serif"

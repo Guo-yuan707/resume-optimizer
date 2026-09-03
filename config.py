@@ -14,6 +14,11 @@
 DEFAULT_RESUME_PATH = "examples/my-resume.txt"  # 命令行版默认读的简历
 DEFAULT_JD_PATH = "examples/my-jd.txt"          # 命令行版默认读的 JD
 
+# ===== 上传格式(第 15 课新增)=====
+# 网页版两个上传窗各收什么格式,集中在 config,前端和后端共用一份清单
+RESUME_ACCEPT = ["txt", "pdf", "docx"]   # 简历:文本 / 文字型 PDF / Word
+JD_ACCEPT = ["txt", "md", "jpg", "jpeg", "png"]  # JD:文本文件 + 图片(自动 OCR)
+
 # ===== LLM 模型配置 =====
 # 可选模型列表(网页下拉框用)
 MODELS = ["deepseek-v4-flash", "deepseek-v4-pro"]

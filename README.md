@@ -1,13 +1,14 @@
 # 📄 简历优化助手
 
-一个用 Python 写的简历优化工具:上传简历 + 填写 JD 关键词,自动分析关键词匹配度、检查简历质量问题,调用 DeepSeek 大模型生成改写建议,还能直接导出改写好的整份简历。
+一个用 Python 写的简历优化工具:上传简历和一份目标职位 JD,自动分析关键词匹配度、检查简历质量问题,调用 DeepSeek 大模型生成改写建议,还能直接导出改写好的整份简历。
 
-命令行版和网页版都有 —— 网页版用 **Streamlit** 构建,上传文件、填关键词、点按钮即可得到完整分析。
+命令行版和网页版都有 —— 网页版用 **Streamlit** 构建,上传简历 + 一份 JD,点按钮即可得到完整分析。
 
 🔗 **在线体验**:https://resume-optimizer-yeazwx2nnetzxfxgmuthmn.streamlit.app/(Streamlit Community Cloud 部署)
 
 ## ✨ 功能
 
+- 📄 **多格式上传**:简历支持 .txt / .pdf(文字型)/ .docx;JD 支持 .txt/.md,也支持 .jpg/.png 截图(本地 OCR 自动识别)或直接粘贴文本
 - 🔍 **关键词匹配**:把 JD 里的关键词和简历做比对,计算匹配率,标出命中/缺失
 - 🩺 **简历质量检查**:9 条规则自动检查(联系方式是否完整、各段落是否充实、有没有空项等)
 - 🤖 **AI 优化建议**:基于前面的分析结果,DeepSeek 逐条给出针对性的改写建议(STAR 法则等)
@@ -38,7 +39,7 @@ python -m venv .venv
 .venv/Scripts/python -m pytest tests
 ```
 
-54 个测试覆盖解析(parser)、匹配(matcher)、检查(checker)、JD 关键词解析(llm)、文件导出(exporter)、RAG 知识库(knowledge)与检索(retriever)。
+62 个测试覆盖解析(parser)、匹配(matcher)、检查(checker)、JD 关键词解析(llm)、文件导出(exporter)、RAG 知识库(knowledge)、检索(retriever)与多格式读取(loader)。
 
 ## 📁 项目结构
 
@@ -54,7 +55,8 @@ python -m venv .venv
 │   ├── llm.py                # LLM 调用:拼 prompt → DeepSeek → 建议/改写
 │   ├── exporter.py           # 导出:把改写后的简历写进文件
 │   ├── knowledge.py          # RAG 知识库:读岗位文档 + 切块 + 检索拼参考
-│   └── retriever.py          # RAG 检索:TF-IDF 向量化 + 余弦相似度
+│   ├── retriever.py          # RAG 检索:TF-IDF 向量化 + 余弦相似度
+│   └── loader.py             # 文件读取:txt/pdf/docx/jpg/png → 纯文本(含图片 OCR)
 ├── examples/knowledge/       # 岗位知识库(真实岗位要求文档)
 ├── examples/                 # 测试数据(示例简历 / JD)
 ├── output/                   # 导出文件存放处(自动生成)
@@ -65,7 +67,7 @@ python -m venv .venv
 
 ## 🛠️ 技术栈
 
-- **Python 3.14** · Streamlit(网页)· openai SDK(调 DeepSeek,OpenAI 兼容接口)· scikit-learn + numpy(RAG 向量化与相似度检索)· python-dotenv(读 .env)· pytest(测试)
+- **Python 3.14** · Streamlit(网页)· openai SDK(调 DeepSeek,OpenAI 兼容接口)· scikit-learn + numpy(RAG 向量化与相似度检索)· pypdf + python-docx(PDF/Word 解析)· RapidOCR(JD 截图 OCR)· python-dotenv(读 .env)· pytest(测试)
 
 ## ⚙️ 配置说明
 

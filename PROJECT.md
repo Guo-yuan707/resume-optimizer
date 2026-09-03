@@ -22,9 +22,10 @@
 ## 三、怎么运行
 
 ```bash
-cd "d:/Project/Job Search AI Assistant"
-.venv/Scripts/activate          # 进入虚拟环境(前缀出现 (.venv) 即成功)
-python main.py                  # 运行入口
+cd "d:/Project/resume optimize"
+.venv/Scripts/activate                    # 进入虚拟环境(前缀出现 (.venv) 即成功)
+.venv/Scripts/python main.py              # 命令行入口:跑完整链路(解析→匹配→检查→RAG→AI 建议→导出)
+.venv/Scripts/python -m streamlit run app.py   # 网页入口:浏览器打开 http://localhost:8501
 ```
 
 - 环境:Python 3.14.6,虚拟环境在 `.venv/`
@@ -48,26 +49,31 @@ python main.py                  # 运行入口
 │   ├── exporter.py     # 导出(第9课):save_resume() 把改写后的简历写进文件
 │   ├── knowledge.py    # 知识库(第10课):read_knowledge_files() 读岗位文档 + chunk_text() 切块
 │   │                   #   + build_knowledge_context() 检索知识库拼参考段落(第12课)
-│   └── retriever.py    # 向量检索(第11课):build_knowledge_index() 建索引 + retrieve() 检索
-├── tests/             # 单元测试(第7课):pytest,54 个用例(第13课补到)
+│   ├── retriever.py    # 向量检索(第11课):build_knowledge_index() 建索引 + retrieve() 检索
+│   └── loader.py       # 文件读取(第15课):extract_text() 把上传的 txt/pdf/docx/jpg/png 全抽成纯文本
+├── tests/             # 单元测试(第7课起):pytest,62 个用例全绿
 │   ├── test_parser.py # 测解析模块
 │   ├── test_matcher.py# 测匹配模块
 │   ├── test_checker.py# 测检查模块
-│   ├── test_llm.py    # 测 JD 关键词解析(第8课,纯函数部分)
-│   └── test_exporter.py# 测文件写入(第9课)
-├── examples/          # 测试数据
-├── output/            # 导出文件(第9课):优化版简历存这里,自动生成
-│   ├── resume.txt     # 示例假简历
-│   ├── my-resume.txt  # 用户真实简历(第1课练习创建)
-│   ├── sample-jd.txt  # 示例 JD(第3课:方便以后从文件提取关键词)
-│   └── knowledge/      # 岗位知识库(第10课):真实岗位要求文档,丢进去即可扩充
+│   ├── test_llm.py    # 测 JD 关键词解析 + prompt 注入(纯函数,不联网)
+│   ├── test_exporter.py# 测文件写入(第9课)
+│   ├── test_knowledge.py # 测知识库切块/检索(第10/13课)
+│   ├── test_retriever.py # 测向量化+相似度(第11课,纯数学)
+│   └── test_loader.py  # 测多格式读取(第15课):txt 编码回退/docx/pdf/报错
+├── examples/          # 测试数据(进公开仓库的是假数据)
+│   ├── resume.txt     # 示例假简历(第1课,公开)
+│   ├── sample-jd.txt  # 示例 JD(第3课,公开)
+│   └── knowledge/     # 岗位知识库(第10课):真实岗位要求文档(公开)
+├── output/            # 导出文件(第9课):程序生成,已 .gitignore,不进 git
+│   └── optimized_resume.txt   # AI 改写后的简历存这里
 ├── PROJECT.md         # 项目总控制台:是什么、做到哪、接下来干嘛
 ├── NOTES.md           # 学习笔记(每课知识点 + 踩坑记录)
 ├── INTERVIEW.md       # 面试问答集(这个项目的专属八股)
 ├── CAREER.md          # 求职备战总清单(四块能力 + 资源 + 进度勾选)
 ├── .env               # API Key 配置文件(第5课:不进入版本控制)
 ├── .env.example       # API Key 模板(第7课:提交到 git,别人照着建 .env)
-├── .gitignore         # 告诉 git 忽略 .env/.venv/__pycache__
+├── .gitignore         # 保护:.env / .venv / output + 真实个人简历与 JD(含手机号,不进公开仓库)
+├── .streamlit/        # (第15课)Streamlit 主题配置 config.toml:页面基础配色
 └── .venv/             # Python 虚拟环境,自动生成,永不手动改
 ```
 
@@ -89,6 +95,7 @@ python main.py                  # 运行入口
 | 第12课 | RAG:检索结果注入 prompt | 可选参数、prompt 注入、token 预算 | ✅ 完成 2026-08-13 |
 | 第13课 | RAG 收尾:测试 + 清单核对 | tmp_path、monkeypatch | ✅ 完成 2026-08-13 |
 | 第14课 | git + 部署上线 | git 基础、.gitignore 保护、gh、Streamlit Cloud、TOML Secrets | ✅ 完成 2026-08-15 |
+| 第15课 | 界面升级(简约专业风)+ 多格式上传 | 多格式解析(pdf/docx)、图片 OCR、懒加载、Streamlit 主题/CSS | ✅ 完成 2026-09-03 |
 
 ## 六、已完成记录
 
@@ -241,6 +248,7 @@ python main.py                  # 运行入口
 4. **日志 logging**:本次轻量工程化跳过了,以后项目复杂了补上
 
 > 导出优化版简历(原第 1 条)已在第 9 课完成 ✅
+> 原「可选方向」第 1 条(支持 PDF/docx/md 上传)、第 2 条(JD 图片 OCR)已在第 15 课完成 ✅(2026-09-03)
 
 升级时记得:**先跑一遍测试确保全绿,再动手改**——安全网就是这样用的。
 
@@ -253,3 +261,77 @@ python main.py                  # 运行入口
 - 进度更新:每完成一课就更新本文件的"五、进度表"
 - 当前 Python 3.14.6,装库用 `.venv/Scripts/pip install xxx`,运行用 `.venv/Scripts/python`
 - **现在有两个入口**:`python main.py`(命令行,第1-5课)和 `streamlit run app.py`(网页,第6课),两个入口共享同一套模块
+- **第 15 课起网页版 UI 已改版**(详见第十节):去侧边栏 → 居中单栏卡片风;去掉手动关键词(关键词只来自 JD,AI 提取后可删减);简历收 .txt/.pdf/.docx,JD 收文本文件/粘贴/图片(.jpg/.png 自动 OCR)
+
+## 九、项目 1 结课总结(2026-09-02 里程碑)
+
+**一句话意义**:不是"做了个工具",而是让一个 Python 基础薄弱的人,把「从读文本到部署上线」的 AI 应用全链路**每层亲手实现、每层能开口讲**,做成简历上真正站得住的主打项目(替代当初讲不明的 Egg 项目)。
+
+**一张表看懂 14 课的成长链**:
+
+| 阶段 | 做了啥 | 亲手实现 vs 借力 | 面试能讲 |
+|---|---|---|---|
+| 解析(第1-2课) | 读简历 → Resume 结构化 | 亲手:标题行分段、dataclass | 把非结构化文本变结构化 |
+| 匹配(第3课) | 简历 vs JD 关键词比对 | 亲手:大小写归一、算匹配率 | `in` vs `==`、命中率怎么算 |
+| 检查(第4课) | 9 条质量规则 | 亲手:try/except 兜底 | 检查怎么做到不崩 |
+| LLM(第5课) | 调 DeepSeek 出建议 | 借力:openai SDK(OpenAI 兼容) | prompt 工程、token、temperature |
+| Web(第6课) | Streamlit 网页版 | 借力:框架 | 网页 = 把模块接到 UI |
+| 工程化(第7课) | config / README / pytest | 亲手:测试边界设计 | 为何只测纯函数、不测真实 API |
+| 结构化输出(第8课) | AI 提取 JD 关键词 | 亲手:正则 + json.loads 容错 | AI 输出怎么保健壮 |
+| 导出(第9课) | AI 整份改写 → 存文件 → 可回读 | 亲手:文件写入、抽公共函数 | 输出与下游兼容的坑(禁 markdown) |
+| RAG(第10-12课) | 切块 → TF-IDF → 余弦检索 → 注入 prompt | 亲手:整套检索,**不调 embedding API** | 向量 ≠ 关键词、开卷 vs 闭卷、token 预算 |
+| 收尾(第13课) | tmp_path / monkeypatch | 亲手 | 测试不碰真实文件 |
+| git+部署(第14课) | GitHub + Streamlit Cloud | 亲手:gh 命令行 | TOML Secrets 的坑 |
+
+**硬成果**:线上可点(网页 resume-optimizer-yeazwx2nnetzxfxgmuthmn.streamlit.app / GitHub github.com/Guo-yuan707/resume-optimizer);62 个 pytest 全绿;命令行 + 网页双入口;用自己的工具反哺自己——真实简历与目标 JD 的关键词匹配率 42% → 50%(同套词、工具实测),简历 v2 打磨到可投、工具自查 9/9。
+
+**「能讲」与「还不能上简历」边界**:
+- 能讲清(可写简历、可深挖):RAG 全链路 / 结构化输出容错 / 测试边界 / token 与输出预算 / 云端部署链路
+- 还不能(别写,一问就穿帮):**Agent、Function Calling、MCP Server** ← 这是项目 2 的动机
+- 反例教训:当初 Egg 项目靠 AI 一口气生成、自己讲不明 → 弃用。**简历上每个词都得能现场演示**
+
+**遗留待办(2026-09-02 记录,避免丢失)**:
+1. 公开仓库新克隆跑 `python main.py` 会因默认简历路径是私有文件而报错 —— 已识别的坑,暂不修(个人主要走网页版)
+2. INTERVIEW.md「深挖题4 部署」还标着"待练",下次磨成金句
+3. 第一个稳妥投递靶待定(my-jd.txt 那份 JD 要求偏硬:本地模型/DB/Agent/MCP)
+4. 项目 2 方向待拍板(主线是补 Agent / Function Calling)
+
+## 十、第 15 课已完成记录(2026-09-03):界面升级 + 多格式上传
+
+**一句话**:把网页端从"学生作品感"升级成"简约专业风",并让上传贴近真实求职场景 —— 简历支持 .txt/.pdf/.docx,JD 支持文本文件 / 图片(.jpg/.png 自动 OCR)/ 粘贴。
+
+### 需求 + 用户拍板的决策
+- UI:清爽浅色专业风(浅灰底 + 白底圆角卡片 + 单一靛蓝强调色)、**居中单栏**(去掉侧边栏);模型等参数收进折叠的「高级选项」
+- 输入:简历和 JD 是**两个独立上传窗**(不是合成一个拖拽框);**去掉手动关键词** —— 关键词只来自 JD(AI 提取后可勾选删减)
+- Word 只支持 `.docx`(老 .doc 在云端 Linux 难解,已确认);PDF 只支持**文字型**(扫描版不 OCR,如实友好提示)
+- JD 三种来源:上传 .txt/.md、上传 .jpg/.png(OCR)、粘贴文本;**未传 JD → 醒目提醒 + 降级只跑质量检查**
+
+### 做了什么
+| 文件 | 改动 |
+|---|---|
+| `resume_optimizer/loader.py` | **新增**:extract_text() 按扩展名把上传的内存字节抽成纯文本;txt 编码 utf-8 → gb18030 兜底;pdf 用 pypdf、docx 用 python-docx(段落+表格)、图片用 RapidOCR;重库全部懒加载、OCR 引擎单例缓存、双 import 兼容 |
+| `app.py` | **重写**:居中单栏 + 一张输入卡(简历/JD 两个独立上传窗)+ 结果卡片化;无 JD 降级只出质量检查 |
+| `config.py` | 新增 `RESUME_ACCEPT` / `JD_ACCEPT` 两个格式清单(前后端共用) |
+| `.streamlit/config.toml` | **新增**:页面基础配色(浅色主题、靛蓝 primaryColor) |
+| `requirements.txt` | 新增:pypdf、python-docx、rapidocr-onnxruntime(已 pin 版本;cp314 轮子,py3.14 与云端都兼容) |
+| `tests/test_loader.py` | **新增** 8 个用例(txt 两种编码 / docx 段落+表格 / PDF / 报错),旧 54 → **62 全绿** |
+| `examples/sample-jd.png` | **新增**:示例 JD 截图(OCR 演示 / 测试用,假数据可进公开仓库) |
+
+### 知识点(详见 NOTES.md 第 15 课)
+1. 加一层「文件 → 纯文本」适配层(loader):格式扩展只动这一层,parser/matcher/checker/llm/knowledge 一行不改(它们只认文本)
+2. 编码兜底:Windows 中文 txt 常见 GBK,utf-8 解不了自动退 gb18030
+3. PDF/docx/OCR 库**懒加载**(函数内 import):用到才加载,OCR 缺库也不拖垮整体
+4. OCR 本地化:RapidOCR(自带中英文模型,不联网不花钱、隐私好)+ 引擎单例缓存(首次加载慢正常)
+5. UI 双管齐下:`.streamlit/config.toml` 管基础配色 + app.py 注入 CSS 管卡片/圆角/字体/留白;居中单栏 = `layout="centered"`
+6. 无 JD 降级设计:与其报错卡住,不如先给出能给的(质量检查)+ 醒目提醒引导补 JD
+
+### 踩坑记录(面试可讲)
+- `__import__("resume_optimizer.loader")` 实际返回的是**顶层包** `resume_optimizer`,getattr 拿不到子模块里的 `_read_txt` → 改成"分发表的值直接放函数对象",更直白
+- pypdf 只"读"不"写"文字型 PDF → 单测夹具是**手写的最小合法 ASCII PDF**;中文 PDF 留真实文件手测
+- OCR 首次调用加载模型要几秒;Windows 终端中文乱码只影响显示不影响逻辑(断言用子串比较即可)
+
+### 验证
+- **62 个 pytest 全绿**;loader 手验(txt 两种编码 / docx 段落+表格 / PDF 抽取 / 未知扩展名 / 空 PDF)
+- Streamlit AppTest 两条**离线**路径通过:只传简历(无 JD)→ 出提醒 + 质量检查卡;不传简历点分析 → 友好报错(不崩)
+- OCR 冒烟:示例 JD 截图(中英文)识别 8 行,Python / RAG / Git / 数据分析 / 检索 等全部命中
+- ⏳ 待做:浏览器完整走查(含图片 JD 全链路)、`git push` 云端重建验证(需用户点头)

@@ -6,3 +6,7 @@ python-dotenv==1.2.2
 pytest==9.1.1
 scikit-learn==1.9.0
 numpy==2.4.1
+# 第 15 课新增:多格式文件解析 + JD 图片 OCR
+pypdf==6.16.2            # 文字型 PDF → 抽文本
+python-docx==1.2.0       # .docx → 抽文本(段落 + 表格)
+rapidocr-onnxruntime==1.2.3  # JD 图片(.jpg/.png)本地 OCR,自带中英文模型,无需联网下载

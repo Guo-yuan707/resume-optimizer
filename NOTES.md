@@ -936,3 +936,73 @@ RAG 升级到此全部完成:检索(第 11 课)→ 增强(第 12 课)→ 测试�
 | `examples/my-resume.txt` | 项目描述加"已部署上线(Streamlit Community Cloud)" |
 | GitHub 仓库 | **新增**:`Guo-yuan707/resume-optimizer`(公开) |
 | 线上 app | **新增**:Streamlit Cloud 部署,网址见 PROJECT.md |
+
+## 第 15 课:界面升级(简约专业风)+ 多格式上传(2026-09-03)
+
+### 0. 本课在干嘛
+
+两件事:① 把网页端从"满屏 emoji + 朴素列表"的学生感,改成清爽浅色·专业卡片风(去侧边栏、居中单栏);② 让上传贴近真实求职场景 —— 简历不再只能 .txt,JD 截图不用手抄。
+
+### 1. 加一层「文件 → 纯文本」的适配层(核心思路)
+
+- 问题:简历有 txt/pdf/docx,JD 有 txt/md/图片,难道每个下游模块都去判断格式?
+- 解法:**不扩散格式逻辑**,新增 `resume_optimizer/loader.py`,统一出口 `extract_text(filename, data) -> str`:
+  不管你上传什么,它都"翻译"成一段纯文本字符串再往下传。
+- 收益:parser/matcher/checker/llm/knowledge **一行不用改** —— 它们从一开始就只认文本。
+- 面试可叫它「适配器/门面模式」:隔离变化,让扩展格式只改一个地方。
+
+### 2. txt 编码坑与 gb18030 兜底
+
+- Windows 记事本另存的 txt 常见 GBK/GB18030;用 utf-8 直接解会抛 `UnicodeDecodeError`。
+- 兜底写法:`try: data.decode("utf-8") except UnicodeDecodeError: data.decode("gb18030")`。
+- gb18030 是 GBK 的超集,基本覆盖"打不开的中文 txt"。**解码永远留一条后路**。
+
+### 3. PDF / docx 怎么抽文字
+
+- PDF:用 pypdf,`PdfReader(BytesIO(字节))` 逐页 `page.extract_text()` 拼起来。
+  - 只能抽"文字型"PDF(能选中复制那种);抽出来是空 → 多半是扫描版 → 抛**友好提示**而不是崩溃。
+- docx:用 python-docx,但**不能只读段落**:很多简历正文放在表格里。
+  - 遍历文档骨架 `doc.element.body` 的子节点,按顺序:是段落就取文字,是表格就逐行逐格取 —— 保住"段落→表格→段落"的真实先后。
+- 两者都吃**内存字节**(BytesIO),不用先把文件存磁盘 —— Streamlit 上传的文件本来就在内存里。
+
+### 4. 图片 OCR:本地 RapidOCR + 懒加载 + 引擎缓存
+
+- DeepSeek 不收图片 → JD 截图得先"认字"转文本,这一步叫 OCR(光学字符识别)。
+- 为什么用本地 RapidOCR 不用云 OCR API:免费、不联网(隐私好)、**自带中英文模型**不用下载、能自己讲原理。
+- 两个实战细节:
+  - **懒加载**:`from rapidocr_onnxruntime import RapidOCR` 写在函数里,只有真识别图片才 import → 模块本身永远轻,OCR 库坏了也不拖垮启动。
+  - **双 import 兼容**:`rapidocr-onnxruntime`(老包名,本项目用的)装不上时自动退 `rapidocr`(新包名)。
+  - **引擎单例缓存**:模块级全局变量存引擎,第一次识别慢(要加载模型),之后直接复用。
+
+### 5. Streamlit 界面升级:主题 + CSS 注入 + 居中单栏
+
+- 配色双管齐下:
+  - `.streamlit/config.toml` 的 `[theme]` 管**基础变量**(浅色底、primaryColor、正文色);
+  - app.py 里 `st.markdown(样式, unsafe_allow_html=True)` **注入 CSS** 管卡片圆角/阴影/字体/拖拽区这些 config 管不到的细节。
+- 居中单栏 = `st.set_page_config(layout="centered")`;卡片 = `st.container(border=True)` 再给它的容器 CSS 套"白底圆角"。
+- 中文字体栈:`"PingFang SC", "Microsoft YaHei", "Noto Sans SC"`,别只依赖系统默认。
+- 不常用的参数(模型选择)收进 `st.expander` 折叠的"高级选项",主界面才干净。
+
+### 6. 无 JD 降级设计
+
+- 去掉手动关键词后,关键词只来自 JD;那用户只传简历没传 JD 怎么办?
+- 选择:**不卡死,给能给的** —— 醒目提醒"补 JD 可得关键词匹配",同时照常跑质量检查。
+- 原则:报错让人走不下去是下策;把已有信息的价值先交付、再引导补齐,才顺手。
+
+### 7. 本课新增/修改的文件
+
+| 文件 | 改动 |
+|------|------|
+| `resume_optimizer/loader.py` | **新增**:extract_text() 多格式→纯文本;txt 编码兜底、pdf/docx/图片读取、OCR 懒加载 |
+| `app.py` | **重写**:居中单栏、输入卡(两独立上传窗)、结果卡片化、无 JD 降级 |
+| `config.py` | 新增 RESUME_ACCEPT / JD_ACCEPT 上传格式清单 |
+| `.streamlit/config.toml` | **新增**:浅色主题基础配色 |
+| `requirements.txt` | 新增 pypdf / python-docx / rapidocr-onnxruntime(pin 版本) |
+| `tests/test_loader.py` | **新增** 8 个用例,旧 54 → 62 全绿 |
+| `examples/sample-jd.png` | **新增**:示例 JD 截图(OCR 演示/测试用) |
+
+### 8. 踩坑记录(面试好素材)
+
+- **`__import__("a.b")` 坑**:它返回的是顶层包 `a`,不是子模块 `a.b`。想用 `getattr` 按字符串拿子模块函数拿不到 → 改成**分发表直接放函数对象**(值是函数本身),又直白又少一层魔法。
+- **pypdf 只读不写**:没法用它造含中文的测试 PDF → 测试夹具用**手写的最小合法 ASCII PDF**(xref 表都要手工算偏移);中文 PDF 留到真实文件手测。
+- **OCR 首次慢 + 终端乱码**:模型加载头几秒正常(已用单例缓存);Windows 终端打印中文乱码只影响显示,程序内做断言判断不受影响。

@@ -17,4 +17,5 @@ output/
 
 # 真实个人资料 — 含手机号/邮箱，绝不进公开仓库
 examples/my-resume.txt
+examples/my-resume-v2.txt
 examples/my-jd.txt
